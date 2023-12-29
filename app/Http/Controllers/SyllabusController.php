@@ -75,6 +75,7 @@ class SyllabusController extends Controller
         $sum2 = 0;
         $sum5 = 0;
         $sum6 = 0;
+        $content5 = '';
 
 // Вычисление сумм
         for ($i = 1; $i <= 15; $i++) {
