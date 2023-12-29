@@ -929,27 +929,27 @@ class SyllabusController extends Controller
 
 <tr style=" width: 100%;">
 <td style=" font-weight: bold; border:1px solid black; width: 30%;" ><p>Title</p></td>
-<td style=" border:1px solid black; width: 70%;" ><p>' . $syllabus['educationDiscipline']['name'] . '</p></td>
+<td style=" border:1px solid black; width: 70%;" ><p>' . $syllabus->name . '</p></td>
 </tr>
 
 <tr style=" width: 100%; ">
 <td style="font-weight: bold;border:1px solid black;" ><p>Responsible Faculty member / Instructor</p>
-</td><td style="border:1px solid black;" ><p>' . ucfirst(strtolower($pps_data['lastname_en'])) . ' ' . ucfirst(strtolower($pps_data['firstname_en'])) . ' ' . ucfirst(strtolower($pps_data['middlename_en'])) . '</p></td>
+</td><td style="border:1px solid black;" ><p>' . ucfirst(strtolower($pps_data->lastname_en)) . ' ' . ucfirst(strtolower($pps_data->firstname_en)) . ' ' . ucfirst(strtolower($pps_data->middlename_en)) . '</p></td>
 </tr>
 
 <tr style=" width: 100%; ">
 <td style="font-weight: bold;border:1px solid black;" ><p>Contacts</p>
-</td><td style="border:1px solid black;" ><p>' . $pps_data['username'] . '@uib.kz' . ', ' . $pps_data['email'] . '</p></td>
+</td><td style="border:1px solid black;" ><p>' . $pps_data->username . '@uib.kz' . ', ' . $pps_data->email . '</p></td>
 </tr>
 
 <tr style=" width: 100%; ">
 <td style="font-weight: bold;border:1px solid black;" ><p>Faculty</p>
-</td><td style="border:1px solid black;" ><p>' . $syllabus['educationDiscipline']['department']['name_ru'] . '</p></td>
+</td><td style="border:1px solid black;" ><p>' . $syllabus->name_ru . '</p></td>
 </tr>
 
 <tr style=" width: 100%; ">
 <td style="font-weight: bold;border:1px solid black;" ><p>Language of Instruction</p>
-</td><td style="border:1px solid black;" ><p>' . $syllabus['educationDiscipline']['language']['native_name'] . '</p></td>
+</td><td style="border:1px solid black;" ><p>' . $syllabus->native_name . '</p></td>
 </tr>
 
 <tr style=" width: 100%; ">
@@ -991,7 +991,7 @@ class SyllabusController extends Controller
 
 <tr style=" width: 100%; ">
 <td style=" font-weight: bold;border:1px solid black;"><p>ECTS credits</p></td>
-<td style="border:1px solid black;"><p>' . $syllabus['educationDiscipline']['credit'] . '</p>
+<td style="border:1px solid black;"><p>' . $syllabus->credit . '</p>
 </td>
 </tr>
 
@@ -1004,12 +1004,12 @@ class SyllabusController extends Controller
 <tr style="
     width: 100%; ">
 <td style=" font-weight: bold;border:1px solid black;"><p>Course Description</p></td>
-<td style="border:1px solid black;"><p>' . $syllabus['description'] . '</p></td>
+<td style="border:1px solid black;"><p>' . $syllabus->description . '</p></td>
 </tr>
 
 <tr style=" width: 100%; ">
 <td style=" font-weight: bold;border:1px solid black;"><p>Intended learning outcomes</p></td>
-<td style="border:1px solid black;"><p>' . '<i>1. Upon completion of the course, the student should know: </i><br>' . $syllabus['knowledge'] . '<br>' . '<i>2. Upon completion of the course, the student should be able to: </i><br>' . $syllabus['abilities'] . '<br>' . '<i>3. Personal and key skills: </i><br>' . $syllabus['skills'] . '</p></td>
+<td style="border:1px solid black;"><p>' . '<i>1. Upon completion of the course, the student should know: </i><br>' . $syllabus->knowledge . '<br>' . '<i>2. Upon completion of the course, the student should be able to: </i><br>' . $syllabus->abilities . '<br>' . '<i>3. Personal and key skills: </i><br>' . $syllabus->skills . '</p></td>
 </tr>
 
 <tr style=" width: 100%; ">
