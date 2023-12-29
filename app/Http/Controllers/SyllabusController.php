@@ -486,7 +486,7 @@ class SyllabusController extends Controller
 ';
 
 
-        } elseif ($syllabus && $syllabus['educationDiscipline']['education_language'] == 82) {
+        } elseif ($syllabus && $syllabus->education_language == 82) {
 
             $syllabus_content = DB::table('syllabus_content')
                 ->where('syllabus_id', $syllabus['id'])
