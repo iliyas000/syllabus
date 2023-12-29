@@ -490,33 +490,33 @@ class SyllabusController extends Controller
         } elseif ($syllabus && $syllabus->education_language == 82) {
 
             $syllabus_content = DB::table('syllabus_content')
-                ->where('syllabus_id', $syllabus['id'])
+                ->where('syllabus_id', $syllabus->syllabus_id)
                 ->first();
 
             $syllabus_main_literature = DB::table('syllabus_literature')
-                ->where('syllabus_id', $syllabus['id'])
+                ->where('syllabus_id', $syllabus->syllabus_id)
                 ->where('literature_type', 1)
                 ->get();
 
             $syllabus_add_literature = DB::table('syllabus_literature')
-                ->where('syllabus_id', $syllabus['id'])
+                ->where('syllabus_id', $syllabus->syllabus_id)
                 ->where('literature_type', 2)
                 ->get();
 
 
-            $eval1 = $syllabus['evaluation_option_id'] == 1 ? '<p><ins><b>1-нұсқа. ACCA, CFA стандарттары</b></ins></p>
+            $eval1 = $syllabus->evaluation_option_id == 1 ? '<p><ins><b>1-нұсқа. ACCA, CFA стандарттары</b></ins></p>
 <p>Бақылау жұмысы - 40%</p>
 <p>Дәрістегі белсенділік - 30%</p>
 <p>Практикалық жаттығулар, СӨЖ - 30%</p>' : " ";
 
-            $eval2 = $syllabus['evaluation_option_id'] == 2 ? '<p><ins><b>2-нұсқа. Тілдік пәндер</b></ins></p>
+            $eval2 = $syllabus->evaluation_option_id == 2 ? '<p><ins><b>2-нұсқа. Тілдік пәндер</b></ins></p>
 <p>Практикалық жаттығулар (сабаққа белсенді қатысу) - 15%</p>
 <p>СОӨЖ (үй тапсырмасы) - 15%</p>
 <p>СӨЖ (ROS және/немесе жобалық жұмыс) - 30%</p>
 <p>Аралық бақылау - 30%</p>
 <p>Тесттер (тақырыптың немесе бөлімнің соңында, аралық блиц-бақылау) - 10%</p>' : " ";
 
-            $eval3 = $syllabus['evaluation_option_id'] == 3 ? '<p><ins><b>3-нұсқа. Blended</b></ins></p>
+            $eval3 = $syllabus->evaluation_option_id == 3 ? '<p><ins><b>3-нұсқа. Blended</b></ins></p>
 <p>Сабақтағы белсенділік - 10%</p>
 <p>Бейне дәрістерді өз бетінше оқу арқылы модуль бойынша тест тапсыру - 20%</p>
 <p>Ағымдық бақылаумен дебаттық дәріс quick quiz - 20%</p>
@@ -524,14 +524,14 @@ class SyllabusController extends Controller
 <p>Бақылау жұмысы* - 20%</p>
 <p>Плагиатқа тексерумен ROS бойынша жазбаша жұмыс - 20%</p>' : " ";
 
-            $eval4 = $syllabus['evaluation_option_id'] == 4 ? '<p><ins><b>4-нұсқа</b><ins></p>
+            $eval4 = $syllabus->evaluation_option_id == 4 ? '<p><ins><b>4-нұсқа</b><ins></p>
 <p>Дәріс - 10%</p>
 <p>Тәжірибелік дайындық, СОӨЖ - 25%</p>
 <p>Плагиатқа тексерумен ROS бойынша жазбаша жұмыс - 20%</p>
 <p>СӨЖ тапсырмаларын орындау - 15%</p>
 <p>Бақылау жұмысы* - 30%</p>' : " ";
 
-            $eval5 = $syllabus['evaluation_option_id'] == 5 ? '<p><ins><b>5-нұсқа</b><ins></p>
+            $eval5 = $syllabus->evaluation_option_id == 5 ? '<p><ins><b>5-нұсқа</b><ins></p>
 <p>Дәрістер, Moodle-да тест тапсыру арқылы материалдарды өз бетінше оқу – 10%</p>
 <p>Тәжірибелік дайындық – 30%</p>
 <p>СОӨЖ: Плагиатқа тексерумен ROS бойынша жазбаша жұмыс - 30%</p>
@@ -551,32 +551,32 @@ class SyllabusController extends Controller
 
 <tr style="width: 100%;">
 <td style="font-weight: bold;border:1px solid black; width: 30%;" ><p>Пән атауы</p>
-</td><td style="border:1px solid black; width: 70%;" ><p>' . $syllabus['educationDiscipline']['name'] . '</p></td>
+</td><td style="border:1px solid black; width: 70%;" ><p>' . $syllabus->name . '</p></td>
 </tr>
 
 <tr style=" width: 100%; ">
 <td style="font-weight: bold;border:1px solid black;" ><p>Жауапты оқытушы</p>
-</td><td style="border:1px solid black;" ><p>' . ucfirst(strtolower($pps_data['lastname'])) . ' ' . ucfirst(strtolower($pps_data['firstname'])) . ' ' . ucfirst(strtolower($pps_data['middlename'])) . '</p></td>
+</td><td style="border:1px solid black;" ><p>' . ucfirst(strtolower($pps_data->lastname)) . ' ' . ucfirst(strtolower($pps_data->firstname)) . ' ' . ucfirst(strtolower($pps_data->middlename)) . '</p></td>
 </tr>
 
 <tr style=" width: 100%; ">
 <td style="font-weight: bold;border:1px solid black;" ><p>Байланыс ақпараты</p>
-</td><td style="border:1px solid black;" ><p>' . $pps_data['username'] . '@uib.kz' . ', ' . $pps_data['email'] . '</p></td>
+</td><td style="border:1px solid black;" ><p>' . $pps_data->username . '@uib.kz' . ', ' . $pps_data->email . '</p></td>
 </tr>
 
 <tr style=" width: 100%; ">
 <td style="font-weight: bold;border:1px solid black;" ><p>Кафедра</p>
-</td><td style="border:1px solid black;" ><p>' . $syllabus['educationDiscipline']['department']['name_ru'] . '</p></td>
+</td><td style="border:1px solid black;" ><p>' . $syllabus->name_ru . '</p></td>
 </tr>
 
 <tr style=" width: 100%; ">
 <td style="font-weight: bold;border:1px solid black;" ><p>Оқыту тілі</p>
-</td><td style="border:1px solid black;" ><p>' . $syllabus['educationDiscipline']['language']['native_name'] . '</p></td>
+</td><td style="border:1px solid black;" ><p>' . $syllabus->native_name . '</p></td>
 </tr>
 
 <tr style=" width: 100%; ">
 <td style="font-weight: bold;border:1px solid black;" ><p>Деңгей</p>
-</td><td style="border:1px solid black;" ><p>' . $syllabus['educationDiscipline']['studyLevel']['name'] . '</p></td>
+</td><td style="border:1px solid black;" ><p>' . $syllabus->name . '</p></td>
 </tr>
 
 <tr style="
@@ -614,7 +614,7 @@ class SyllabusController extends Controller
 
 <tr style=" width: 100%; ">
 <td style=" font-weight: bold;border:1px solid black;"><p>EСTS кредиттері</p></td>
-<td style="border:1px solid black;"><p>' . $syllabus['educationDiscipline']['credit'] . '</p>
+<td style="border:1px solid black;"><p>' . $syllabus->credit . '</p>
 </td>
 </tr>
 
@@ -627,12 +627,12 @@ class SyllabusController extends Controller
 <tr style="
     width: 100%; ">
 <td style=" font-weight: bold;border:1px solid black;"><p>Пәннің сипаттамасы</p></td>
-<td style="border:1px solid black;"><p>' . $syllabus['description'] . '</p></td>
+<td style="border:1px solid black;"><p>' . $syllabus->description . '</p></td>
 </tr>
 
 <tr style=" width: 100%; ">
 <td style=" font-weight: bold;border:1px solid black;"><p>Білім беруде күтілетін нәтижелер</p></td>
-<td style="border:1px solid black;"><p>' . '<i>1. Курс аяқтағаннан кейін студент білуі керек: </i><br>' . $syllabus['knowledge'] . '<br>' . '<i>2. Курс аяқтағаннан кейін студент: </i><br>' . $syllabus['abilities'] . '<br>' . '<i>3. Жеке және негізгі дағдылар: </i><br>' . $syllabus['skills'] . '</p></td>
+<td style="border:1px solid black;"><p>' . '<i>1. Курс аяқтағаннан кейін студент білуі керек: </i><br>' . $syllabus->knowledge . '<br>' . '<i>2. Курс аяқтағаннан кейін студент: </i><br>' . $syllabus->abilities . '<br>' . '<i>3. Жеке және негізгі дағдылар: </i><br>' . $syllabus->skills . '</p></td>
 </tr>
 
 <tr style=" width: 100%; ">
