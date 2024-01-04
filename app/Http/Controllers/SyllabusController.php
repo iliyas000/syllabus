@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Syllabus;
+use App\Models\DocumentToLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Mpdf\Mpdf;
@@ -1403,7 +1403,7 @@ class SyllabusController extends Controller
 
         $mpdf->SetDisplayMode('fullpage');
         $fullContent = $content . $content2 . $content3 . $content4 . $content5 . preg_replace('/<\?xml.*\?>/i', '', $pdfContent);
-        $pdfFilePath = 'documents/syllabus/syllabus_file.pdf';
+        $pdfFilePath = storage_path('documents/syllabus/syllabus_'.$syllabus_id.'.pdf');
 
 // Generate PDF content using mPDF
         $mpdf->WriteHTML($fullContent, \Mpdf\HTMLParserMode::HTML_BODY);
@@ -1413,11 +1413,17 @@ class SyllabusController extends Controller
 
 // Check if the file was created successfully
         if (file_exists($pdfFilePath)) {
-            return $pdfFilePath;
+                // Создание новой записи
+                $newDocument = DocumentToLog::create([
+                    'file_url' => $pdfFilePath,
+                    'file_name' => 'syllabus_'.$syllabus_id,
+                    'category_id' => 1,
+                ]);
+                // Другие действия после создания, например, возврат ответа или перенаправление
+
         } else {
             return "Failed to create the PDF file.";
         }
     }
-
 
 }
