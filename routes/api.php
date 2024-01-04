@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PDFController;
 use App\Http\Controllers\SendPdfController;
 use App\Http\Controllers\SyllabusController;
 use Illuminate\Http\Request;
@@ -21,6 +22,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('/send-pdf/{category}/{file_id}', [SendPdfController::class, 'sendPdf']);
+
+Route::get('/download-pdf/{filePath}', [PDFController::class, 'downloadPDF']);
 
 Route::post('/save-syllabus', [SyllabusController::class, 'saveSyllabus']);
 Route::get('/test', [SyllabusController::class, 'test']);
