@@ -16,7 +16,7 @@ class SendPdfController extends Controller
                 ->select('file_url')
                 ->first();
         }
-        $b64Doc = chunk_split(base64_encode(file_get_contents($file_url->file_url)));
+        $b64Doc = base64_encode(file_get_contents($file_url->file_url));
         return $b64Doc;
     }
 
