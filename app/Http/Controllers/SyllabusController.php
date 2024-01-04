@@ -6,20 +6,21 @@ use App\Models\Syllabus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Mpdf\Mpdf;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 
 class SyllabusController extends Controller
 {
 
-    public function printSyllabus($education_discipline_id,$user_id)
+
+    public function saveSyllabus($syllabus_id)
     {
-        $syllabus = DB::table('syllabus')
+        $syllabus = DB::connection('front')->table('syllabus')
             ->join('education_discipline', 'syllabus.education_discipline_id', '=', 'education_discipline.id')
             ->join('language', 'education_discipline.education_language', '=', 'language.id')
             ->join('uib_departments', 'education_discipline.department_id', '=', 'uib_departments.id')
             ->join('study_level', 'education_discipline.study_level_id', '=', 'study_level.id')
-            ->where('syllabus.education_discipline_id', $education_discipline_id)
-            ->where('syllabus.user_id', $user_id)
+            ->where('syllabus.id', $syllabus_id)
             ->orderByDesc('syllabus.id')
             ->select(
                 'syllabus.*',
@@ -38,34 +39,34 @@ class SyllabusController extends Controller
         }
 
         // Получаем данные пользователя и его pps_data
-        $pps_data = DB::table('user')
+        $pps_data = DB::connection('front')->table('user')
             ->leftJoin('pps_data', 'user.id', '=', 'pps_data.user_id')
             ->select('user.lastname as lastname_en', 'user.firstname as firstname_en', 'user.middlename as middlename_en', 'user.username', 'user.email', 'pps_data.lastname', 'pps_data.firstname', 'pps_data.middlename')
             ->where('user.id', $syllabus->user_id)
             ->first();
 
         // Получаем credit_time_norm_template для разных sp_education_work_id
-        $credit_time_norm_1 = DB::table('credit_time_norm_template')
+        $credit_time_norm_1 = DB::connection('front')->table('credit_time_norm_template')
             ->where('department_id', $syllabus->department_id)
             ->where('value', $syllabus->credit)
             ->where('is_standard', $syllabus->is_standard)
             ->where('sp_education_work_id', 1)
             ->first();
-        $credit_time_norm_2 = DB::table('credit_time_norm_template')
+        $credit_time_norm_2 = DB::connection('front')->table('credit_time_norm_template')
             ->where('department_id', $syllabus->department_id)
             ->where('value', $syllabus->credit)
             ->where('is_standard', $syllabus->is_standard)
             ->where('sp_education_work_id', 2)
             ->first();
 
-        $credit_time_norm_5 = DB::table('credit_time_norm_template')
+        $credit_time_norm_5 = DB::connection('front')->table('credit_time_norm_template')
             ->where('department_id', $syllabus->department_id)
             ->where('value', $syllabus->credit)
             ->where('is_standard', $syllabus->is_standard)
             ->where('sp_education_work_id', 5)
             ->first();
 
-        $credit_time_norm_6 = DB::table('credit_time_norm_template')
+        $credit_time_norm_6 = DB::connection('front')->table('credit_time_norm_template')
             ->where('department_id', $syllabus->department_id)
             ->where('value', $syllabus->credit)
             ->where('is_standard', $syllabus->is_standard)
@@ -75,7 +76,20 @@ class SyllabusController extends Controller
         $sum2 = 0;
         $sum5 = 0;
         $sum6 = 0;
-        $content5 = '';
+        $office_hours = DB::connection('front')->table('syllabus_schedule_office_hour')
+            ->where('syllabus_id', $syllabus->syllabus_id)
+            ->join('sp_days', 'syllabus_schedule_office_hour.day_id', '=', 'sp_days.id')
+            ->join('schedule_interval_time', 'syllabus_schedule_office_hour.interval_id', '=', 'schedule_interval_time.id')
+            ->select('sp_days.name_ru as day',
+                'schedule_interval_time.time as time'
+            )
+            ->get();
+        $officeHourString = "";
+
+        foreach ($office_hours as $hour) {
+            $officeHourString .= $hour->day . ' ' . $hour->time . ' ';
+        }
+
 
 // Вычисление сумм
         for ($i = 1; $i <= 15; $i++) {
@@ -86,7 +100,7 @@ class SyllabusController extends Controller
         }
 
 // Запрос prerequisites
-        $prerequisites = DB::table('syllabus_requisites')
+        $prerequisites = DB::connection('front')->table('syllabus_requisites')
             ->select(
                 'syllabus_requisites.syllabus_id',
                 'syllabus_requisites.discipline_id',
@@ -99,7 +113,7 @@ class SyllabusController extends Controller
             ->get();
 
 // Запрос postrequisites
-        $postrequisites = DB::table('syllabus_requisites')
+        $postrequisites = DB::connection('front')->table('syllabus_requisites')
             ->select(
                 'syllabus_requisites.syllabus_id',
                 'syllabus_requisites.discipline_id',
@@ -110,7 +124,7 @@ class SyllabusController extends Controller
             ->where('syllabus_requisites.syllabus_id', $syllabus->syllabus_id)
             ->where('syllabus_requisites.type', 2)
             ->get();
-        $main_tasks = DB::table('syllabus_main_tasks')
+        $main_tasks = DB::connection('front')->table('syllabus_main_tasks')
             ->where('syllabus_id', $syllabus->syllabus_id)
             ->get();
 
@@ -125,17 +139,19 @@ class SyllabusController extends Controller
         foreach ($postrequisites as $postrequisite) {
             $postrequisitesData .= mb_strtolower($postrequisite->discipline_name) . ', ';
         }
-
+        $syllabus_practice = DB::connection('front')->table('syllabus_practice')
+            ->where('syllabus_id', $syllabus->syllabus_id)
+            ->get();
         if ($syllabus && $syllabus->education_language == 137) {
-            $syllabus_content = DB::table('syllabus_content')
+            $syllabus_content = DB::connection('front')->table('syllabus_content')
                 ->where('syllabus_id', $syllabus->syllabus_id)
                 ->first();
-                $syllabus_main_literature = DB::table('syllabus_literature')
-                    ->where('syllabus_id', $syllabus->syllabus_id)
-                    ->where('literature_type', 1)
-                    ->get();
+            $syllabus_main_literature = DB::connection('front')->table('syllabus_literature')
+                ->where('syllabus_id', $syllabus->syllabus_id)
+                ->where('literature_type', 1)
+                ->get();
 
-            $syllabus_add_literature = DB::table('syllabus_literature')
+            $syllabus_add_literature = DB::connection('front')->table('syllabus_literature')
                 ->where('syllabus_id', $syllabus->syllabus_id)
                 ->where('literature_type', 2)
                 ->get();
@@ -249,6 +265,14 @@ class SyllabusController extends Controller
 </tr>
 
 <tr style=" width: 100%; ">
+<td style=" font-weight: bold;border:1px solid black;"><p>Офисные часы</p></td>
+<td style="border:1px solid black;">
+<p>' . $officeHourString . '</p>
+<p>Для посещения офисного часа необходимо предварительное согласование с преподавателем</p>
+</td>
+</tr>
+
+<tr style=" width: 100%; ">
 <td style=" font-weight: bold;border:1px solid black;"><p>EСTS кредиты</p></td>
 <td style="border:1px solid black;"><p>' . $syllabus->credit . '</p>
 </td>
@@ -275,7 +299,7 @@ class SyllabusController extends Controller
 <td style=" font-weight: bold;border:1px solid black;"><p>Требования курса</p></td>
 <td style="border:1px solid black;"><p>'
                 . '1. К каждому аудиторному занятию вы должны подготовиться заранее. Темы занятии приведены ниже в разделе «Содержание дисциплины».' . '<br>'
-                . '2. Задания будут загружены в учебный портал (https://front.uib.kz) в течение семестра, с указанием сроков сдачи.' . '<br>'
+                . '2. Задания будут загружены в учебный портал (https://moodle.uib.kz) в течение семестра, с указанием сроков сдачи.' . '<br>'
                 . '3. Задания должны выполняться в указанные сроки. Позже задания будут приняты с коэффициентом (0,8-через неделю, 0,5-через две недели? 3 и более – 0,3).' . '<br>'
                 . '4. За 20% пропуска аудиторных занятии без уважительной причины, преподаватель имеет право не допустить студента к итоговому контролю (экзамен) и отправить на летний семестр.' . '<br>
 ' . '</p>
@@ -393,12 +417,10 @@ class SyllabusController extends Controller
 </table>
 <br>
 ';
-            $content2 = '';
-            if ($syllabus_content) {
-                $content2 .= '
+            $content2 = '
 <table style="border:1px solid black; width: 100%; border-collapse: collapse;">
 <tr>
-<th style="border:1px solid black;" align="center" colspan="4"><h3><b>Содержание дисциплины</b></h3></th>
+<th style="border:1px solid black;" align="center" colspan="3"><h3><b>Содержание дисциплины</b></h3></th>
 </tr>
 <tr style="">
 <th style="border:1px solid black; width: 12%;"><p>Неделя</p></th>
@@ -407,32 +429,46 @@ class SyllabusController extends Controller
 </th>
 </tr>
 ';
-                for ($i = 1; $i <= 15; $i++) {
-                    $content2 .= '
+
+
+            for ($i = 1; $i <= 15; $i++) {
+                $syllabus_questions = DB::connection('front')->table('syllabus_questions')
+                    ->where('syllabus_id', $syllabus->syllabus_id)
+                    ->where('week', $i)
+                    ->get();
+                $questionString = "";
+                if (count($syllabus_questions) > 0) {
+                    foreach ($syllabus_questions as $question) {
+                        $questionString .= $question->text . ';';
+                    }
+                }
+                $content2 .= '
 <tr style="width: 100%; ">
-<td style=" font-weight: bold; border:1px solid black; text-align: center;" rowspan="4"><p>' . $i . ' неделя</p></td>
-<td style=" border:1px solid black;"><p>' . '<i>' . 'Лекция. ' . '</i>' . $syllabus_content->{'week' . $i} . '</p></td>
-<td style=" border:1px solid black; text-align: center;"><p>' . $credit_time_norm_1->{'w_' . $i} . '</p></td>
+<td style=" font-weight: bold; border:1px solid black; text-align: center;" rowspan="5"><p>' . $i . ' неделя</p></td>
+<td style=" border:1px solid black;"><p>' . '<i>' . 'Лекция. ' . '</i>' . $syllabus_practice[$i - 1]->lecture_text . '</p></td>
+<td style=" border:1px solid black; text-align: center;" rowspan="2"><p>' . $syllabus_practice[$i - 1]->lecture_hour . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 <tr>
-<td style=" border:1px solid black;"><p><i>Практика (семинар)</i></p></td>
-<td style=" border:1px solid black; text-align: center;"><p>' . $credit_time_norm_2->{'w_' . $i} . '</p></td>
+<td style=" border:1px solid black;"><p>' . '<i>' . 'Рассматриваемые вопросы: ' . '</i>' . $questionString . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 <tr>
-<td style=" border:1px solid black;"><p><i>СРСП</i></p></td>
-<td style=" border:1px solid black; text-align: center;"><p>' . $credit_time_norm_5->{'w_' . $i} . '</p></td>
+<td style=" border:1px solid black;"><p>' . '<i>' . 'Практика(семинар): ' . '</i>' . $syllabus_practice[$i - 1]->practice . '</p></td>
+<td style=" border:1px solid black; text-align: center;" rowspan="3"><p>' . $syllabus_practice[$i - 1]->seminar_hour . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 <tr>
-<td style=" border:1px solid black;"><p><i>СРС</i></p></td>
-<td style=" border:1px solid black; text-align: center;"><p>' . $credit_time_norm_6->{'w_' . $i} . '</p></td>
+<td style=" border:1px solid black;"><p>' . '<i>' . 'Задание на семинар: ' . '</i>' . $syllabus_practice[$i - 1]->seminar_task . '</p></td>
+<td style=" border:1px solid black;"><p></p></td>
+</tr>
+<tr>
+<td style=" border:1px solid black;"><p>' . '<i>' . 'Материалы к чтению: ' . '</i>' . $syllabus_practice[$i - 1]->material . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 ';
-                }
             }
+
             $content2 .= '';
 
             $content3 = '';
@@ -451,20 +487,7 @@ class SyllabusController extends Controller
                     $literature_number++;
                 }
             }
-            $content5 = '';
-            if($main_tasks){
-                $content5 = '<tr><th style="border:1px solid black;" align="center" colspan="4"><h3><b>Основные задания в рамках курса </b></h3></th>';
-                $number = 1;
-                foreach ($main_tasks as $task) {
-                    $content5 .= '
-</tr>
-<tr style="width: 100%; ">
-<td style=" border:1px solid black;"colspan="4"><p>' . $number . '. ' . $task->task . ', ' . $task->descriptions . ', ' . $task->deadline . ', ' . $task->criterions . '; <br>' . '</p></td>
-</tr>
-';
-                    $number++;
-                }
-            }
+
             $content4 = '';
 
             if ($syllabus_add_literature) {
@@ -480,25 +503,62 @@ class SyllabusController extends Controller
                     $add_literature_number++;
                 }
             }
-            $content4 .= '</table>
+            $content5 = '
+</table>
+<br>
+<table style="border:1px solid black; width: 100%; border-collapse: collapse;">
+<tr>
+<th style="border:1px solid black;" align="center" colspan="4"><h3><b>Основные задания в рамках курса </b></h3></th>
+</tr>
+<tr style="">
+<th style="border:1px solid black; width: 15%;"><p>Задание</p></th>
+<th style="border:1px solid black; width: 50%;"><p>Описание</p></th>
+<th style="border:1px solid black; width: 20%;"><p>Период сдачи (Deadline)</p></th>
+<th style="border:1px solid black; width: 15%;"><p>Критерии оценки</p></th>
+</th>
+</tr>
+';
+            foreach ($main_tasks as $main_task) {
+                $content5 .= '
+<tr style="width: 100%; ">
+<td style=" border:1px solid black; text-align: center;"><p>' . $main_task->task . '</p></td>
+<td style=" border:1px solid black; text-align: center;"><p>' . $main_task->description . '</p></td>
+<td style=" border:1px solid black; text-align: center;"><p>' . $main_task->deadline . '</p></td>
+<td style=" border:1px solid black; text-align: center;"><p>' . $main_task->criterions . '</p></td>
+</tr>
+';
+            }
+            $content5 .= '</table>
 <br>
 <p>Силлабус (Syllabus) составлен на основании утвержденного каталога элективных дисциплин.</p>
 <p>Силлабус (Syllabus) составил(а) _______________________</p>
 ';
 
-
         } elseif ($syllabus && $syllabus->education_language == 82) {
+            $office_hours = DB::connection('front')->table('syllabus_schedule_office_hour')
+                ->where('syllabus_id', $syllabus->syllabus_id)
+                ->join('sp_days', 'syllabus_schedule_office_hour.day_id', '=', 'sp_days.id')
+                ->join('schedule_interval_time', 'syllabus_schedule_office_hour.interval_id', '=', 'schedule_interval_time.id')
+                ->select('sp_days.name_kz as day',
+                    'schedule_interval_time.time as time'
+                )
+                ->get();
+            $officeHourString = "";
 
-            $syllabus_content = DB::table('syllabus_content')
+            foreach ($office_hours as $hour) {
+                $officeHourString .= $hour->day . ' ' . $hour->time . ' ';
+            }
+
+            $syllabus_content = DB::connection('front')->table('syllabus_content')
                 ->where('syllabus_id', $syllabus->syllabus_id)
                 ->first();
 
-            $syllabus_main_literature = DB::table('syllabus_literature')
+            $syllabus_main_literature = DB::connection('front')->table('syllabus_literature')
                 ->where('syllabus_id', $syllabus->syllabus_id)
                 ->where('literature_type', 1)
                 ->get();
 
-            $syllabus_add_literature = DB::table('syllabus_literature')
+            $syllabus_add_literature = DB::connection('front')->table('syllabus_literature')
                 ->where('syllabus_id', $syllabus->syllabus_id)
                 ->where('literature_type', 2)
                 ->get();
@@ -613,6 +673,14 @@ class SyllabusController extends Controller
 </tr>
 
 <tr style=" width: 100%; ">
+<td style=" font-weight: bold;border:1px solid black;"><p>Офис сағаттар</p></td>
+<td style="border:1px solid black;">
+<p>' . $officeHourString . '</p>
+<p>Офис сағатына қатысу үшін оқытушының алдын ала келісімі қажет.</p>
+</td>
+</tr>
+
+<tr style=" width: 100%; ">
 <td style=" font-weight: bold;border:1px solid black;"><p>EСTS кредиттері</p></td>
 <td style="border:1px solid black;"><p>' . $syllabus->credit . '</p>
 </td>
@@ -639,7 +707,7 @@ class SyllabusController extends Controller
 <td style=" font-weight: bold;border:1px solid black;"><p>Курс талаптары</p></td>
 <td style="border:1px solid black;"><p>'
                 . '1. Студент әрбір аудиториялық сабаққа дайындалып келуі міндетті. Әр аптадағы сабақтар тақырыбы, төменде «Пәннің мазмұны» бөлімінде көрсетілген.' . '<br>'
-                . '2. Жеке тапсырмалар семестр бойында, тапсыру мерзімі көрсетіліп оқу порталына (https://front.uib.kz) жүктеледі.' . '<br>'
+                . '2. Жеке тапсырмалар семестр бойында, тапсыру мерзімі көрсетіліп оқу порталына (https://moodle.uib.kz) жүктеледі.' . '<br>'
                 . '3. Әр  тапсырма көрсетілген мерзімге дейін орындалып тапсырылуы міндетті. Тапсырма уақытылы орындалмаған жағдайда төмедету коэффициентәмен (1 апта кешіктірілсе коэффициент 0,8; 2 апта - 0,5; 3 апта және одан да жоғары – 0,3) қабылданады.' . '<br>'
                 . '4. Студент аудиториялық сабақтың 20% себепсіз жіберіп алса, оқытушы студентті қортынды емтиханға жібермей, жаздық семестірге қалдыруға құқұлы.' . '<br>
 ' . '</p>
@@ -775,26 +843,38 @@ class SyllabusController extends Controller
 ';
 
                 for ($i = 1; $i <= 15; $i++) {
+                    $syllabus_questions = DB::connection('front')->table('syllabus_questions')
+                        ->where('syllabus_id', $syllabus->syllabus_id)
+                        ->where('week', $i)
+                        ->get();
+                    $questionString = "";
+                    if (count($syllabus_questions) > 0) {
+                        foreach ($syllabus_questions as $question) {
+                            $questionString .= $question->text . ';';
+                        }
+                    }
                     $content2 .= '
 <tr style="width: 100%; ">
-<td style=" font-weight: bold; border:1px solid black; text-align: center;" rowspan="4"><p>' . $i . ' апта</p></td>
-<td style=" border:1px solid black;"><p>' . '<i>' . 'Дәріс. ' . '</i>' . $syllabus_content->{'week' . $i} . '</p></td>
-<td style=" border:1px solid black; text-align: center;"><p>' . $credit_time_norm_1->{'w_' . $i} . '</p></td>
+<td style=" font-weight: bold; border:1px solid black; text-align: center;" rowspan="5"><p>' . $i . ' апта</p></td>
+<td style=" border:1px solid black;"><p>' . '<i>' . 'Дәріс. ' . '</i>' . $syllabus_practice[$i - 1]->lecture_text . '</p></td>
+<td style=" border:1px solid black; text-align: center;" rowspan="2"><p>' . $syllabus_practice[$i - 1]->lecture_hour . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 <tr>
-<td style=" border:1px solid black;"><p><i>Практика (семинар)</i></p></td>
-<td style=" border:1px solid black; text-align: center;"><p>' . $credit_time_norm_2->{'w_' . $i} . '</p></td>
+<td style=" border:1px solid black;"><p>' . '<i>' . 'Қарастырылатын сұрақтар: ' . '</i>' . $questionString . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 <tr>
-<td style=" border:1px solid black;"><p><i>СОӨЖ</i></p></td>
-<td style=" border:1px solid black; text-align: center;"><p>' . $credit_time_norm_5->{'w_' . $i} . '</p></td>
+<td style=" border:1px solid black;"><p>' . '<i>' . 'Практика(семинар): ' . '</i>' . $syllabus_practice[$i - 1]->practice . '</p></td>
+<td style=" border:1px solid black; text-align: center;" rowspan="3"><p>' . $syllabus_practice[$i - 1]->seminar_hour . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 <tr>
-<td style=" border:1px solid black;"><p><i>СӨЖ</i></p></td>
-<td style=" border:1px solid black; text-align: center;"><p>' . $credit_time_norm_6->{'w_' . $i} . '</p></td>
+<td style=" border:1px solid black;"><p>' . '<i>' . 'Семинарлық тапсырма: ' . '</i>' . $syllabus_practice[$i - 1]->seminar_task . '</p></td>
+<td style=" border:1px solid black;"><p></p></td>
+</tr>
+<tr>
+<td style=" border:1px solid black;"><p>' . '<i>' . 'Оқу материалдары: ' . '</i>' . $syllabus_practice[$i - 1]->material . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 ';
@@ -834,22 +914,60 @@ class SyllabusController extends Controller
                     $add_literature_number++;
                 }
             }
-            $content4 .= '</table>
+            $content5 = '
+</table>
+<br>
+<table style="border:1px solid black; width: 100%; border-collapse: collapse;">
+<tr>
+<th style="border:1px solid black;" align="center" colspan="4"><h3><b>Пәннің негізгі тапсырмалары </b></h3></th>
+</tr>
+<tr style="">
+<th style="border:1px solid black; width: 15%;"><p>Тапсырма</p></th>
+<th style="border:1px solid black; width: 50%;"><p>Сипаттама</p></th>
+<th style="border:1px solid black; width: 20%;"><p>Тапсыру мерзімі (Deadline)</p></th>
+<th style="border:1px solid black; width: 15%;"><p>Бағалау критерийлері</p></th>
+</th>
+</tr>
+';
+            foreach ($main_tasks as $main_task) {
+                $content5 .= '
+<tr style="width: 100%; ">
+<td style=" border:1px solid black; text-align: center;"><p>' . $main_task->task . '</p></td>
+<td style=" border:1px solid black; text-align: center;"><p>' . $main_task->description . '</p></td>
+<td style=" border:1px solid black; text-align: center;"><p>' . $main_task->deadline . '</p></td>
+<td style=" border:1px solid black; text-align: center;"><p>' . $main_task->criterions . '</p></td>
+</tr>
+';
+            }
+            $content5 .= '</table>
 <br>
 <p>Силлабус (Syllabus) бекітілген элективті пәндер каталогы негізінде құрастырылған.</p>
 <p>Құрастырушы _______________________</p>
 ';
         } else {
-            $syllabus_content = DB::table('syllabus_content')
+            $office_hours = DB::connection('front')->table('syllabus_schedule_office_hour')
+                ->where('syllabus_id', $syllabus->syllabus_id)
+                ->join('sp_days', 'syllabus_schedule_office_hour.day_id', '=', 'sp_days.id')
+                ->join('schedule_interval_time', 'syllabus_schedule_office_hour.interval_id', '=', 'schedule_interval_time.id')
+                ->select('sp_days.name_en as day',
+                    'schedule_interval_time.time as time'
+                )
+                ->get();
+            $officeHourString = "";
+
+            foreach ($office_hours as $hour) {
+                $officeHourString .= $hour->day . ' ' . $hour->time . ' ';
+            }
+            $syllabus_content = DB::connection('front')->table('syllabus_content')
                 ->where('syllabus_id', $syllabus->syllabus_id)
                 ->first();
 
-            $syllabus_main_literature = DB::table('syllabus_literature')
+            $syllabus_main_literature = DB::connection('front')->table('syllabus_literature')
                 ->where('syllabus_id', $syllabus->syllabus_id)
                 ->where('literature_type', 1)
                 ->get();
 
-            $syllabus_add_literature = DB::table('syllabus_literature')
+            $syllabus_add_literature = DB::connection('front')->table('syllabus_literature')
                 ->where('syllabus_id', $syllabus->syllabus_id)
                 ->where('literature_type', 2)
                 ->get();
@@ -991,6 +1109,14 @@ class SyllabusController extends Controller
 </tr>
 
 <tr style=" width: 100%; ">
+<td style=" font-weight: bold;border:1px solid black;"><p>Office hours</p></td>
+<td style="border:1px solid black;">
+<p>' . $officeHourString . '</p>
+<p>Attending an office hour necessitates obtaining prior approval from the instructor.</p>
+</td>
+</tr>
+
+<tr style=" width: 100%; ">
 <td style=" font-weight: bold;border:1px solid black;"><p>ECTS credits</p></td>
 <td style="border:1px solid black;"><p>' . $syllabus->credit . '</p>
 </td>
@@ -1017,7 +1143,7 @@ class SyllabusController extends Controller
 <td style=" font-weight: bold;border:1px solid black;"><p>Requirements</p></td>
 <td style="border:1px solid black;"><p>'
                 . '1. You must prepare in advance for each class according to the schedule below. The topics of the lessons are given below in the section "Content of the discipline". ' . '<br>'
-                . '2. Assignments will be uploaded to the learning portal (https://front.uib.kz ) throughout the semester with an indication of the deadlines.' . '<br>'
+                . '2. Assignments will be uploaded to the learning portal (https://moodle.uib.kz) throughout the semester with an indication of the deadlines.' . '<br>'
                 . '3. Tasks must be completed within the specified time frame. Later tasks will be accepted with coefficient (0,8-in a week, 0,5-in two weeks).' . '<br>'
                 . '4. For 20% of missed classes without good reason, teacher has the right to not let the student to take the final control (exam) and send him/her to the summer semester.' . '<br>
 ' . '</p>
@@ -1152,26 +1278,38 @@ class SyllabusController extends Controller
 ';
 
                 for ($i = 1; $i <= 15; $i++) {
+                    $syllabus_questions = DB::connection('front')->table('syllabus_questions')
+                        ->where('syllabus_id', $syllabus->syllabus_id)
+                        ->where('week', $i)
+                        ->get();
+                    $questionString = "";
+                    if (count($syllabus_questions) > 0) {
+                        foreach ($syllabus_questions as $question) {
+                            $questionString .= $question->text . ';';
+                        }
+                    }
                     $content2 .= '
 <tr style="width: 100%; ">
-<td style=" font-weight: bold; border:1px solid black; text-align: center;" rowspan="4"><p>Week ' . $i . '</p></td>
-<td style=" border:1px solid black;"><p>' . '<i>' . 'Lecture. ' . '</i>' . $syllabus_content->{'week' . $i} . '</p></td>
-<td style=" border:1px solid black; text-align: center;"><p>' . $credit_time_norm_1->{'w_' . $i} . '</p></td>
+<td style=" font-weight: bold; border:1px solid black; text-align: center;" rowspan="5"><p>Week ' . $i . ' </p></td>
+<td style=" border:1px solid black;"><p>' . '<i>' . 'Lecture. ' . '</i>' . $syllabus_practice[$i - 1]->lecture_text . '</p></td>
+<td style=" border:1px solid black; text-align: center;" rowspan="2"><p>' . $syllabus_practice[$i - 1]->lecture_hour . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 <tr>
-<td style=" border:1px solid black;"><p><i>Practice (seminar)</i></p></td>
-<td style=" border:1px solid black; text-align: center;"><p>' . $credit_time_norm_2->{'w_' . $i} . '</p></td>
+<td style=" border:1px solid black;"><p>' . '<i>' . 'Questions covered: ' . '</i>' . $questionString . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 <tr>
-<td style=" border:1px solid black;"><p><i>IWST</i></p></td>
-<td style=" border:1px solid black; text-align: center;"><p>' . $credit_time_norm_5->{'w_' . $i} . '</p></td>
+<td style=" border:1px solid black;"><p>' . '<i>' . 'Practice (seminar): ' . '</i>' . $syllabus_practice[$i - 1]->practice . '</p></td>
+<td style=" border:1px solid black; text-align: center;" rowspan="3"><p>' . $syllabus_practice[$i - 1]->seminar_hour . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 <tr>
-<td style=" border:1px solid black;"><p><i>IWS</i></p></td>
-<td style=" border:1px solid black; text-align: center;"><p>' . $credit_time_norm_6->{'w_' . $i} . '</p></td>
+<td style=" border:1px solid black;"><p>' . '<i>' . 'Seminar assignment: ' . '</i>' . $syllabus_practice[$i - 1]->seminar_task . '</p></td>
+<td style=" border:1px solid black;"><p></p></td>
+</tr>
+<tr>
+<td style=" border:1px solid black;"><p>' . '<i>' . 'Reading materials: ' . '</i>' . $syllabus_practice[$i - 1]->material . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 ';
@@ -1211,14 +1349,46 @@ class SyllabusController extends Controller
                     $add_literature_number++;
                 }
             }
-            $content4 .= '</table>
+            $content5 = '
+</table>
+<br>
+<table style="border:1px solid black; width: 100%; border-collapse: collapse;">
+<tr>
+<th style="border:1px solid black;" align="center" colspan="4"><h3><b>Major assignments of the discipline </b></h3></th>
+</tr>
+<tr style="">
+<th style="border:1px solid black; width: 15%;"><p>Assignment</p></th>
+<th style="border:1px solid black; width: 50%;"><p>Description</p></th>
+<th style="border:1px solid black; width: 20%;"><p>Deadline</p></th>
+<th style="border:1px solid black; width: 15%;"><p>Assessment criteria </p></th>
+</th>
+</tr>
+';
+            foreach ($main_tasks as $main_task) {
+                $content5 .= '
+<tr style="width: 100%; ">
+<td style=" border:1px solid black; text-align: center;"><p>' . $main_task->task . '</p></td>
+<td style=" border:1px solid black; text-align: center;"><p>' . $main_task->description . '</p></td>
+<td style=" border:1px solid black; text-align: center;"><p>' . $main_task->deadline . '</p></td>
+<td style=" border:1px solid black; text-align: center;"><p>' . $main_task->criterions . '</p></td>
+</tr>
+';
+            }
+            $content5 .= '</table>
 <br>
 <p>Syllabus was made on the basis of approved catalogue of elective courses.</p>
 <p>Syllabus was prepared by_______________________</p>
 ';
         }
+        $qr = QrCode::generate(
+            'https://front.uib.kz/qr-verify?syllabus='.$syllabus_id,
+        );
+        $pdfContent = "<p style='text-align: center; width: 20px; height: 20px'>$qr</p>";
+//        $pdfContent = "<img src=' . $qr . '>";
 
+        // Create mPDF instance with settings
         $mpdf = new Mpdf([
+            'mode' => 'utf-8',
             'format' => 'A4',
             'margin_left' => 10,
             'margin_right' => 10,
@@ -1230,12 +1400,23 @@ class SyllabusController extends Controller
             'default_font' => 'DejaVuSerifCondensed',
             'tempDir' => sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'mpdf'
         ]);
+
         $mpdf->SetDisplayMode('fullpage');
-        $fullContent = $content . $content2 . $content3  .$content5 . $content4 ;
+        $fullContent = $content . $content2 . $content3 . $content4 . $content5 . preg_replace('/<\?xml.*\?>/i', '', $pdfContent);
+        $pdfFilePath = 'documents/syllabus/syllabus_file.pdf';
+
+// Generate PDF content using mPDF
         $mpdf->WriteHTML($fullContent, \Mpdf\HTMLParserMode::HTML_BODY);
-        return $mpdf->Output();
 
+// Save the PDF to the specified file path
+        $mpdf->Output($pdfFilePath, \Mpdf\Output\Destination::FILE);
 
+// Check if the file was created successfully
+        if (file_exists($pdfFilePath)) {
+            return $pdfFilePath;
+        } else {
+            return "Failed to create the PDF file.";
+        }
     }
 
 

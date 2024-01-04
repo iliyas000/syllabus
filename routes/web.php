@@ -19,7 +19,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/print-syllabus/{education_discipline_id}/{user_id}', [SyllabusController::class, 'printSyllabus']);
-Route::get('/test-db', [SyllabusController::class, 'getSyllabus']);
+Route::get('/save-syllabus/{syllabus_id}', [SyllabusController::class, 'saveSyllabus']);
+Route::get('/test', [SyllabusController::class, 'test']);
 
 
