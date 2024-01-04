@@ -1402,7 +1402,7 @@ class SyllabusController extends Controller
 
         $mpdf->SetDisplayMode('fullpage');
         $fullContent = $content . $content2 . $content3 . $content4 . $content5 . preg_replace('/<\?xml.*\?>/i', '', $pdfContent);
-        $pdfFilePath = storage_path('documents/syllabus/syllabus_'.$syllabus_id.'.pdf');
+        $pdfFilePath = storage_path('app/documents/syllabus/syllabus_'.$syllabus_id.'.pdf');
 
 // Generate PDF content using mPDF
         $mpdf->WriteHTML($fullContent, \Mpdf\HTMLParserMode::HTML_BODY);
