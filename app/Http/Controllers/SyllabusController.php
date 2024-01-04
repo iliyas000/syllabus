@@ -13,8 +13,9 @@ class SyllabusController extends Controller
 {
 
 
-    public function saveSyllabus($syllabus_id)
+    public function saveSyllabus(Request $request)
     {
+        $syllabus_id = $request->input('syllabus_id');
         $syllabus = DB::connection('front')->table('syllabus')
             ->join('education_discipline', 'syllabus.education_discipline_id', '=', 'education_discipline.id')
             ->join('language', 'education_discipline.education_language', '=', 'language.id')

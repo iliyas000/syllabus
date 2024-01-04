@@ -3,7 +3,6 @@
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\SendPdfController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\SyllabusController;
 
 
 /*
@@ -20,9 +19,6 @@ use App\Http\Controllers\SyllabusController;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::get('/send-pdf/{category}/{file_id}', [SendPdfController::class, 'sendPdf']);
 
-Route::get('/save-syllabus/{syllabus_id}', [SyllabusController::class, 'saveSyllabus']);
-Route::get('/test', [SyllabusController::class, 'test']);
 
 
