@@ -56,7 +56,7 @@ return [
             'strict' => true,
             'engine' => null,
         ],
-        'syllabus' => [
+        'front' => [
             'driver' => 'mysql',
             'host' => env('SECOND_DB_HOST'),
             'port' => env('SECOND_DB_PORT'),
