@@ -1423,7 +1423,12 @@ class SyllabusController extends Controller
         } else {
             return "Failed to create the PDF file.";
         }
-        $filePath = '/documents/syllabus/syllabus_'.$syllabus_id.'.pdf';
+        $file_name = '/documents/syllabus/syllabus_'.$syllabus_id.'.pdf';
+        $filePath = storage_path($file_name);
+        DB::connection('front')->table('syllabus')
+            ->where('id', $syllabus_id) // Условие выборки записей для обновления
+            ->update(['syllabus_url' => $filePath]);
+        return $filePath;
 
     }
 
