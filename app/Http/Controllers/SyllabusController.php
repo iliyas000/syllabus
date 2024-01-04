@@ -32,8 +32,6 @@ class SyllabusController extends Controller
                 'study_level.*'
             )
             ->first();
-        $syllabus->id;
-
 
         if (!$syllabus) {
             return 'Силлабуса по данной дисциплине нет!';
