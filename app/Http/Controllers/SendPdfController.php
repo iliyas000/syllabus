@@ -17,7 +17,11 @@ class SendPdfController extends Controller
                 ->first();
         }
         $b64Doc = base64_encode(file_get_contents($file_url->file_url));
-        return $b64Doc;
+        $file_url = 'http://192.168.12.52:8000/api/download-pdf/syllabus_'.$file_id.'.pdf';
+        return [
+            'base64'=>$b64Doc,
+            'file_url' => $file_url
+            ];
     }
 
 
