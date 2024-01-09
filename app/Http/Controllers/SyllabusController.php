@@ -443,7 +443,7 @@ class SyllabusController extends Controller
                 }
                 $content2 .= '
 <tr style="width: 100%; ">
-<td style=" font-weight: bold; border:1px solid black; text-align: center;" rowspan="5"><p>' . $i . ' неделя</p></td>
+<td style=" font-weight: bold; border:1px solid black; text-align: center;" rowspan="4"><p>' . $i . ' неделя</p></td>
 <td style=" border:1px solid black;"><p>' . '<i>' . 'Лекция. ' . '</i>' . $syllabus_practice[$i - 1]->lecture_text . '</p></td>
 <td style=" border:1px solid black; text-align: center;" rowspan="2"><p>' . $syllabus_practice[$i - 1]->lecture_hour . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
@@ -849,7 +849,7 @@ class SyllabusController extends Controller
                     }
                     $content2 .= '
 <tr style="width: 100%; ">
-<td style=" font-weight: bold; border:1px solid black; text-align: center;" rowspan="5"><p>' . $i . ' апта</p></td>
+<td style=" font-weight: bold; border:1px solid black; text-align: center;" rowspan="4"><p>' . $i . ' апта</p></td>
 <td style=" border:1px solid black;"><p>' . '<i>' . 'Дәріс. ' . '</i>' . $syllabus_practice[$i - 1]->lecture_text . '</p></td>
 <td style=" border:1px solid black; text-align: center;" rowspan="2"><p>' . $syllabus_practice[$i - 1]->lecture_hour . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
@@ -1279,7 +1279,7 @@ class SyllabusController extends Controller
                     }
                     $content2 .= '
 <tr style="width: 100%; ">
-<td style=" font-weight: bold; border:1px solid black; text-align: center;" rowspan="5"><p>Week ' . $i . ' </p></td>
+<td style=" font-weight: bold; border:1px solid black; text-align: center;" rowspan="4"><p>Week ' . $i . ' </p></td>
 <td style=" border:1px solid black;"><p>' . '<i>' . 'Lecture. ' . '</i>' . $syllabus_practice[$i - 1]->lecture_text . '</p></td>
 <td style=" border:1px solid black; text-align: center;" rowspan="2"><p>' . $syllabus_practice[$i - 1]->lecture_hour . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
