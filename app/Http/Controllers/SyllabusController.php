@@ -453,11 +453,6 @@ class SyllabusController extends Controller
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 <tr>
-<td style=" border:1px solid black;"><p>' . '<i>' . 'Практика(семинар): ' . '</i>' . $syllabus_practice[$i - 1]->practice . '</p></td>
-<td style=" border:1px solid black; text-align: center;" rowspan="3"><p>' . $syllabus_practice[$i - 1]->seminar_hour . '</p></td>
-<td style=" border:1px solid black;"><p></p></td>
-</tr>
-<tr>
 <td style=" border:1px solid black;"><p>' . '<i>' . 'Задание на семинар: ' . '</i>' . $syllabus_practice[$i - 1]->seminar_task . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
@@ -861,11 +856,6 @@ class SyllabusController extends Controller
 </tr>
 <tr>
 <td style=" border:1px solid black;"><p>' . '<i>' . 'Қарастырылатын сұрақтар: ' . '</i>' . $questionString . '</p></td>
-<td style=" border:1px solid black;"><p></p></td>
-</tr>
-<tr>
-<td style=" border:1px solid black;"><p>' . '<i>' . 'Практика(семинар): ' . '</i>' . $syllabus_practice[$i - 1]->practice . '</p></td>
-<td style=" border:1px solid black; text-align: center;" rowspan="3"><p>' . $syllabus_practice[$i - 1]->seminar_hour . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 <tr>
@@ -1296,11 +1286,6 @@ class SyllabusController extends Controller
 </tr>
 <tr>
 <td style=" border:1px solid black;"><p>' . '<i>' . 'Questions covered: ' . '</i>' . $questionString . '</p></td>
-<td style=" border:1px solid black;"><p></p></td>
-</tr>
-<tr>
-<td style=" border:1px solid black;"><p>' . '<i>' . 'Practice (seminar): ' . '</i>' . $syllabus_practice[$i - 1]->practice . '</p></td>
-<td style=" border:1px solid black; text-align: center;" rowspan="3"><p>' . $syllabus_practice[$i - 1]->seminar_hour . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 <tr>
