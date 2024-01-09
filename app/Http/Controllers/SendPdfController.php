@@ -15,13 +15,9 @@ class SendPdfController extends Controller
                 ->orderByDesc('id')
                 ->select('file_url')
                 ->first();
-
-            // Check if file record exists
-            if (!$file_record || empty($file_record->file_url)) {
-                // Return a 404 response
-                abort(404, 'File not found');
+            if(!$file_record){
+                return null;
             }
-
             $file_url = $file_record->file_url;
         }
 
