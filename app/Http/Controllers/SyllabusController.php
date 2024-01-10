@@ -1408,7 +1408,7 @@ class SyllabusController extends Controller
         } else {
             return "Failed to create the PDF file.";
         }
-        $file_name = 'http://192.168.12.52:8000/api/download-pdf/syllabus_'.$syllabus_id.'.pdf';
+        $file_name = 'https://back.uib.kz/syllabus_data/syllabus/download-pdf?syllabus_id='.$syllabus_id;
         DB::connection('front')->table('syllabus')
             ->where('id', $syllabus_id) // Условие выборки записей для обновления
             ->update(['syllabus_url' => $file_name]);
