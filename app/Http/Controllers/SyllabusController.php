@@ -1389,25 +1389,37 @@ class SyllabusController extends Controller
         $fullContent = $content . $content2 . $content3 . $content4 . $content5 . preg_replace('/<\?xml.*\?>/i', '', $pdfContent);
         $pdfFilePath = storage_path('documents/syllabus/syllabus_'.$syllabus_id.'.pdf');
 
-// Generate PDF content using mPDF
+// Генерация содержимого PDF с помощью mPDF
         $mpdf->WriteHTML($fullContent, \Mpdf\HTMLParserMode::HTML_BODY);
 
-// Save the PDF to the specified file path
+// Сохранение PDF по указанному пути к файлу, перезаписывая существующий файл
         $mpdf->Output($pdfFilePath, \Mpdf\Output\Destination::FILE);
 
-// Check if the file was created successfully
+// Проверка, был ли файл успешно обновлен
         if (file_exists($pdfFilePath)) {
-                // Создание новой записи
+            // Обновление записи в базе данных или другие действия при обновлении
+            // Например, если у вас есть модель для обновления записи DocumentToLog, используйте что-то вроде:
+            $existingDocument = DocumentToLog::where('file_name', 'syllabus_'.$syllabus_id)->first();
+
+            if ($existingDocument) {
+                // Обновление существующей записи
+                $existingDocument->update([
+                    'file_url' => $pdfFilePath,
+                ]);
+            } else {
+                // Создание новой записи, если не найдена существующая запись
                 $newDocument = DocumentToLog::create([
                     'file_url' => $pdfFilePath,
                     'file_name' => 'syllabus_'.$syllabus_id,
                     'category_id' => 1,
                 ]);
-                // Другие действия после создания, например, возврат ответа или перенаправление
+            }
 
+            // Другие действия после обновления, например, возврат ответа или перенаправление
         } else {
-            return "Failed to create the PDF file.";
+            return "Не удалось обновить PDF-файл.";
         }
+
         $file_name = 'https://back.uib.kz/syllabus_data/syllabus/download-pdf?syllabus_id='.$syllabus_id;
         DB::connection('front')->table('syllabus')
             ->where('id', $syllabus_id) // Условие выборки записей для обновления
