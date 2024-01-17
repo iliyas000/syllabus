@@ -31,9 +31,11 @@ class SyllabusController extends Controller
                 'language.*',
                 'uib_departments.*',
                 'study_level.*',
-                'sp_exam_type.name as exam_type'
+                'sp_exam_type.name as exam_type',
             )
             ->first();
+//        $syllabus = DB::connection('front')->table('sp_exam_type')->get();
+
 
         if (!$syllabus) {
             return 'Силлабуса по данной дисциплине нет!';
