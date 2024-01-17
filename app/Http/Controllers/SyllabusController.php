@@ -18,6 +18,7 @@ class SyllabusController extends Controller
         $syllabus_id = $request->input('syllabus_id');
         $syllabus = DB::connection('front')->table('syllabus')
             ->join('education_discipline', 'syllabus.education_discipline_id', '=', 'education_discipline.id')
+            ->join('sp_exam_type', 'syllabus.exam_type', '=', 'sp_exam_type.id')
             ->join('language', 'education_discipline.education_language', '=', 'language.id')
             ->join('uib_departments', 'education_discipline.department_id', '=', 'uib_departments.id')
             ->join('study_level', 'education_discipline.study_level_id', '=', 'study_level.id')
@@ -29,7 +30,8 @@ class SyllabusController extends Controller
                 'education_discipline.*',
                 'language.*',
                 'uib_departments.*',
-                'study_level.*'
+                'study_level.*',
+                'sp_exam_type.name as exam_type'
             )
             ->first();
 
@@ -279,7 +281,7 @@ class SyllabusController extends Controller
 
 <tr style=" width: 100%; ">
 <td style=" font-weight: bold;border:1px solid black;"><p>Форма итогового контроля</p></td>
-<td style="border:1px solid black;"><p>' . '' . '</p>
+<td style="border:1px solid black;"><p>' . $syllabus->exam_type . '</p>
 </td>
 </tr>
 
@@ -454,6 +456,7 @@ class SyllabusController extends Controller
 </tr>
 <tr>
 <td style=" border:1px solid black;"><p>' . '<i>' . 'Задание на семинар: ' . '</i>' . $syllabus_practice[$i - 1]->seminar_task . '</p></td>
+<td style=" border:1px solid black; text-align: center;" rowspan="2"><p>' . $syllabus_practice[$i - 1]->seminar_hour . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 <tr>
@@ -682,7 +685,7 @@ class SyllabusController extends Controller
 
 <tr style=" width: 100%; ">
 <td style=" font-weight: bold;border:1px solid black;"><p>Емтихан түрі</p></td>
-<td style="border:1px solid black;"><p>' . '' . '</p>
+<td style="border:1px solid black;"><p>' . $syllabus->exam_type . '</p>
 </td>
 </tr>
 
@@ -860,6 +863,7 @@ class SyllabusController extends Controller
 </tr>
 <tr>
 <td style=" border:1px solid black;"><p>' . '<i>' . 'Семинарлық тапсырма: ' . '</i>' . $syllabus_practice[$i - 1]->seminar_task . '</p></td>
+<td style=" border:1px solid black; text-align: center;" rowspan="2"><p>' . $syllabus_practice[$i - 1]->seminar_hour . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 <tr>
@@ -1113,7 +1117,7 @@ class SyllabusController extends Controller
 
 <tr style=" width: 100%; ">
 <td style=" font-weight: bold;border:1px solid black;"><p>Form of exam</p></td>
-<td style="border:1px solid black;"><p>' . '' . '</p>
+<td style="border:1px solid black;"><p>' . $syllabus->exam_type . '</p>
 </td>
 </tr>
 
@@ -1290,6 +1294,7 @@ class SyllabusController extends Controller
 </tr>
 <tr>
 <td style=" border:1px solid black;"><p>' . '<i>' . 'Seminar assignment: ' . '</i>' . $syllabus_practice[$i - 1]->seminar_task . '</p></td>
+<td style=" border:1px solid black; text-align: center;" rowspan="2"><p>' . $syllabus_practice[$i - 1]->seminar_hour . '</p></td>
 <td style=" border:1px solid black;"><p></p></td>
 </tr>
 <tr>
