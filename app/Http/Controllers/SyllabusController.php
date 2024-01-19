@@ -18,7 +18,7 @@ class SyllabusController extends Controller
         $syllabus_id = $request->input('syllabus_id');
         $syllabus = DB::connection('front')->table('syllabus')
             ->join('education_discipline', 'syllabus.education_discipline_id', '=', 'education_discipline.id')
-            ->join('sp_exam_type', 'syllabus.exam_type', '=', 'sp_exam_type.id')
+            ->leftJoin('sp_exam_type', 'syllabus.exam_type', '=', 'sp_exam_type.id')
             ->join('language', 'education_discipline.education_language', '=', 'language.id')
             ->join('uib_departments', 'education_discipline.department_id', '=', 'uib_departments.id')
             ->join('study_level', 'education_discipline.study_level_id', '=', 'study_level.id')
@@ -39,6 +39,9 @@ class SyllabusController extends Controller
 
         if (!$syllabus) {
             return 'Силлабуса по данной дисциплине нет!';
+        }
+        if(!$syllabus->exam_type){
+            $syllabus->exam_type = 'Не выбрано';
         }
 
         // Получаем данные пользователя и его pps_data
